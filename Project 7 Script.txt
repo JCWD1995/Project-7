@@ -238,7 +238,7 @@ sub enterAilment {
 
 sub assignPIN {
         my $i = 0;
-        while ($patients[$i][0] =~ /[0-9]/) {
+        while (defined $patients[$i][0]) {
                 $i++;
         }
         $PIN = $i + 1;
@@ -255,7 +255,7 @@ sub populateArray {
         $patients[$i][6] = $ailment;
         if ($insurance eq "none") {
                 my $j = 0;
-                while ($noInsurance[$j][0] =~ /[0-9]/) {
+                while (defined $noInsurance[$j][0]) {
                         $j++;
                 }
                 $noInsurance[$j][0] = $PIN;
