@@ -1,0 +1,278 @@
+#!/usr/bin/perl
+
+## Assignment: CIS 140 Project 7
+## Author: William Dole
+## Version: 1.0
+## Purpose: Add Patients
+
+use 5.16.3;
+use strict;
+use warnings;
+use Time::localtime;
+
+my (@patients,@noInsurance);
+my ($continue,$firstName,$lastName,$mi,$age,$insurance,$ailment,$PIN,$monthName);
+my $birthDay = 0;
+use constant YES => 1;
+
+sub main {
+        system ("clear");
+        setContinue();
+        while ($continue == YES) {
+                enterName();
+                enterBirth();
+                enterInsurance();
+                enterAilment();
+                assignPIN();
+                populateArray();
+                printPatientInfo();
+                setContinue();
+        }
+        system ("clear");
+}
+
+main();
+
+sub setContinue {
+        if (defined $continue) {
+                $continue = -1;
+                while ($continue !~ /[0-9]/ || $continue > 1 || $continue < 0) {
+                        print "Do you have more patients to add?";
+                        print "\nEnter 1 for yes or 0 for no.\n";
+                        chomp ($continue = <STDIN>);
+                        if ($continue !~/[0-9]/ || $continue > 1 || $continue < 0 ) {
+                                print "\nINCORRECT INPUT";
+                                sleep 2;
+                                system ("clear");
+                        }
+                }
+                system ("clear");
+                if ($continue == 1) {
+                        $firstName = 0;
+                        $lastName = 0;
+                        $mi = 0;
+                        $birthDay = 0;
+                        $ailment = 0;
+                        $insurance = 0;
+                }
+        } else {
+                $continue = 1;
+        }
+}
+
+sub enterName {
+        $lastName = 0;
+        $firstName = 0;
+        $mi = 0;
+        while ($lastName !~ /^[a-zA-Z]+$/) { #https://stackoverflow.com/questions/2026279/how-can-i-check-if-a-perl-string-contains-letters
+                print "What is the Patient's last name?\n";
+                chomp ($lastName = <STDIN>);
+                if (! $lastName =~ /^[a-zA-Z]+$/) {
+                        print "\nINVALID INPUT";
+                        sleep 2;
+                        system ("clear");
+                }
+                system ("clear");
+        }
+
+        while ($firstName !~ /^[a-zA-Z]+$/) {
+                print "What is the Patient's first name?\n";
+                chomp ($firstName = <STDIN>);
+                if (! $firstName =~ /^[a-zA-Z]+$/) {
+                        print "\nINVALID INPUT";
+                        sleep 2;
+                        system ("clear");
+                }
+                system ("clear");
+        }
+
+        while ($mi !~ /^[a-zA-Z]+$/ || length($mi) > 1) { #http://www.perlmonks.org/?node_id=1971
+                print "What is the Patient's middle initial?\n";
+                chomp ($mi = <STDIN>);
+                if (! $mi =~ /^[a-zA-Z]+$/ || length($mi) > 1) {
+                        print "\nINVALID INPUT";
+                        sleep 2;
+                        system ("clear");
+                }
+                system ("clear");
+        }
+}
+
+sub enterBirth {
+        my $birthMonth = 0;
+        my $birthYear = 0;
+        my $t = localtime;
+        use constant MINYEAR => 1900;
+        my $year = ($t->year + 1900);
+        use constant MINMONTH => 1;
+        use constant MAXMONTH => 12;
+        use constant MINDAY => 1;
+        while ($birthYear !~ /[0-9]/ || $birthYear < MINYEAR || $birthYear > $year) {
+                print "Please enter $firstName $lastName","'s year of birth.\n";
+                chomp ($birthYear = <STDIN>);
+                if ($birthYear !~ /[0-9]/ || $birthYear < MINYEAR || $birthYear > $year) {
+                        print "\nINVALID INPUT\n";
+                        sleep 2;
+                        system ("clear");
+                }
+        }
+        system ("clear");
+        while ($birthMonth !~ /[0-9]/ || $birthMonth < MINMONTH || $birthMonth > MAXMONTH) {
+                print "What month was $firstName $lastName born in?\n";
+                print "Please enter a number to represent the month,\n";
+                print "with 1 meaning January and 12 meaning December.\n";
+                chomp ($birthMonth = <STDIN>);
+                if ($birthMonth !~ /[0-9]/ || $birthMonth < MINMONTH || $birthMonth > MAXMONTH) {
+                        print "\n INVALID INPUT\n";
+                        sleep 2;
+                        system ("clear");
+                }
+        }
+        findMonth($birthMonth);
+        system ("clear");
+        if ($birthMonth == 1 || $birthMonth == 3 || $birthMonth == 5 || $birthMonth == 7 || $birthMonth == 8 || $birthMonth == 10 || $birthMonth == 12) {
+                use constant MAXDAY => 32;
+        } elsif ($birthMonth == 4 || $birthMonth == 6 || $birthMonth == 9 || $birthMonth == 11) {
+                use constant MAXDAY => 31;
+        } else {
+                if (! $birthYear == 1900 && ($birthYear % 4) == 0) {
+                        use constant MAXDAY => 30;
+                }
+                else {
+                        use constant MAXDAY => 29;
+                }
+        }
+        while ($birthDay !~ /[0-9]/ || $birthDay < MINDAY || $birthDay > MAXDAY) {
+                print "Please enter the day $firstName $lastName was born on in $monthName?\n";
+                chomp ($birthDay = <STDIN>);
+                if ($birthDay !~ /[0-9]/ || $birthDay < MINDAY || $birthDay > MAXDAY) {
+                        print "\nINVALID INPUT\n";
+                        sleep 2;
+                        system ("clear");
+                }
+        }
+        system ("clear");
+        confirmBirth($birthYear,$birthMonth);
+        calculateAge($birthYear,$birthMonth);
+}
+
+sub findMonth {
+        my $birthMonth = $_[0];
+        if ($birthMonth == 1) {
+                $monthName = "January";
+        } elsif ($birthMonth == 2) {
+                $monthName = "February";
+        } elsif ($birthMonth == 3) {
+                $monthName = "March";
+        } elsif ($birthMonth == 4) {
+                $monthName = "April";
+        } elsif ($birthMonth == 5) {
+                $monthName = "May";
+        } elsif ($birthMonth == 6) {
+                $monthName = "June";
+        } elsif ($birthMonth == 7) {
+                $monthName = "July";
+        } elsif ($birthMonth == 8) {
+                $monthName = "August";
+        } elsif ($birthMonth == 9) {
+                $monthName = "September";
+        } elsif ($birthMonth == 10) {
+                $monthName = "October";
+        } elsif ($birthMonth == 11) {
+                $monthName = "November";
+        } else {
+                $monthName = "December";
+        }
+}
+
+sub confirmBirth {
+        my $birthYear = $_[0];
+        my $birthMonth = $_[1];
+        my $confirm = -1;
+        while ($confirm !~ /[0-9]/ || $confirm < 0 || $confirm > 1) {
+                print "Was $firstName $lastName born on $monthName $birthDay, $birthYear?\n";
+                print "Enter 1 for yes, and 0 for no.\n";
+                chomp ($confirm = <STDIN>);
+                if ($confirm !~ /[0-9]/ || $confirm < 0 || $confirm > 1) {
+                        print "\nINVALID INPUT\n";
+                        sleep 2;
+                        system ("clear");
+                }
+        }
+        system ("clear");
+        if ($confirm == 0) {
+                $birthDay = 0;
+                enterBirth();
+        }
+}
+
+sub calculateAge {
+        my $t = localtime;
+        my $birthYear = $_[0];
+        my $birthMonth = $_[1];
+        my $year = ($t->year + 1900);
+        my $month = ($t->mon + 1);
+        my $day = ($t->mday);
+        $age = $year - $birthYear;
+        if ($month < $birthMonth) {
+                $age = $age - 1;
+        } elsif ($month == $birthMonth) {
+                if ($day < $birthDay) {
+                        $age = $age - 1;
+                }
+        }
+}
+
+sub enterInsurance {
+        print "What Insurance will $firstName $lastName be using?\n";
+        print "If patient has no insurance, enter \"none\"\n";
+        chomp ($insurance = <STDIN>);
+        system ("clear");
+}
+
+sub enterAilment {
+        print "What brings $firstName $lastName in today?\n";
+        chomp ($ailment = <STDIN>);
+        system ("clear");
+}
+
+sub assignPIN {
+        my $i = 0;
+        while ($patients[$i][0] =~ /[0-9]/) {
+                $i++;
+        }
+        $PIN = $i + 1;
+}
+
+sub populateArray {
+        my $i = $PIN - 1;
+        $patients[$i][0] = $PIN; #https://stackoverflow.com/questions/5024183/how-do-i-create-a-2d-array-in-perl
+        $patients[$i][1] = $lastName;
+        $patients[$i][2] = $firstName;
+        $patients[$i][3] = $mi;
+        $patients[$i][4] = $birthDay;
+        $patients[$i][5] = $insurance;
+        $patients[$i][6] = $ailment;
+        if ($insurance eq "none") {
+                my $j = 0;
+                while ($noInsurance[$j][0] =~ /[0-9]/) {
+                        $j++;
+                }
+                $noInsurance[$j][0] = $PIN;
+                $noInsurance[$j][1] = $lastName;
+                $noInsurance[$j][2] = $firstName;
+                $noInsurance[$j][3] = $mi;
+                $noInsurance[$j][4] = $birthDay;
+                $noInsurance[$j][5] = $ailment;
+        }
+}
+
+sub printPatientInfo {
+        print "The patient has been assigned the PIN $PIN.";
+        print "\nThe patient\'s name is $firstName $mi $lastName.";
+        print "\nThe patient is $age years old.";
+        print "\nThe patient has been admitted for $ailment.";
+        print "\nPress enter to continue.\n";
+        <STDIN>;
+        system ("clear");
+}
